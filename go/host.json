@@ -4,6 +4,13 @@
 		"id": "Microsoft.Azure.Functions.ExtensionBundle",
 		"version": "[1.*, 2.0.0)"
 	},
+	"extensions": {
+        "serviceBus": {
+			"messageHandlerOptions": {
+				"maxConcurrentCalls": 1
+			}
+		}
+	},
 	"httpWorker": {
 		"description": {
 			"defaultExecutablePath": "GoCustomHandlers.exe"

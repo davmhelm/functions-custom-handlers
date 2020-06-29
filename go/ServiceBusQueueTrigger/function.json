@@ -1,0 +1,19 @@
+{
+    "bindings": [
+        {
+            "queueName": "inputsbqueue",
+            "connection": "MyServiceBusConnection",
+            "name": "mySbQueueItem",
+            "type": "serviceBusTrigger",
+            "direction": "in"
+        },
+        {
+            "name": "$return",
+            "type": "serviceBus",
+            "direction": "out",
+            "queueName": "outputsbqueue",
+            "connection": "MyServiceBusConnection"
+          }
+    ],
+    "disabled": false
+}

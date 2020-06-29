@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -44,6 +46,37 @@ func queueTriggerHandler(w http.ResponseWriter, r *http.Request) {
 
 	returnValue := "HelloWorld"
 	invokeResponse := InvokeResponse{Logs: []string{"test log1", "test log2"}, ReturnValue: returnValue}
+
+	js, err := json.Marshal(invokeResponse)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+}
+
+func serviceBusQueueTriggerHandler(w http.ResponseWriter, r *http.Request) {
+	var invokeReq InvokeRequest
+	d := json.NewDecoder(r.Body)
+	decodeErr := d.Decode(&invokeReq)
+	if decodeErr != nil {
+		http.Error(w, decodeErr.Error(), http.StatusBadRequest)
+		return
+	}
+	fmt.Println("The JSON data is:invokeReq metadata......")
+	fmt.Println(invokeReq.Metadata)
+	fmt.Println("The JSON data is:invokeReq data......")
+	fmt.Println(invokeReq.Data)
+	//fmt.Println(invokeReq.Data["mySbQueueItem"].(string))
+
+	returnValue := "processed-" + strings.Trim(invokeReq.Data["mySbQueueItem"].(string), "\"") //fmt.Sprintf("%#v", invokeReq.Data)
+	invokeResponse := InvokeResponse{Logs: []string{"test log1", "test log2"}, ReturnValue: returnValue}
+
+	sleeptime := 20 + (rand.Intn(9) * 5)
+	fmt.Printf("Simulate some work for %v seconds\n", sleeptime)
+	time.Sleep(time.Duration(time.Duration(sleeptime)) * time.Second)
 
 	js, err := json.Marshal(invokeResponse)
 	if err != nil {
@@ -205,6 +238,7 @@ func main() {
 	mux.HandleFunc("/HttpTrigger", httpTriggerHandler)
 	mux.HandleFunc("/HttpTriggerStringReturnValue", httpTriggerHandlerStringReturnValue)
 	mux.HandleFunc("/QueueTrigger", queueTriggerHandler)
+	mux.HandleFunc("/ServiceBusQueueTrigger", serviceBusQueueTriggerHandler)
 	mux.HandleFunc("/BlobTrigger", blobTriggerHandler)
 	mux.HandleFunc("/QueueTriggerWithOutputs", queueTriggerWithOutputsHandler)
 	mux.HandleFunc("/SimpleHttpTrigger", simpleHttpTriggerHandler)
